@@ -270,7 +270,6 @@
     <div class="topbar">
       <div class="brand">
         <h1>Excel Cleaner Dashboard</h1>
-        <p>Upload an <span class="mono">.xlsx</span> → detect header row → map to registries → parse values → view JSON, warnings, unmapped cols, and parsed table.</p>
       </div>
       <div class="actions">
         <button id="btnHealth">Check /health</button>
@@ -287,9 +286,6 @@
           <div>
             <label>API Base URL</label>
             <input id="apiBase" placeholder="http://127.0.0.1:8000" />
-            <div class="small" style="margin-top:6px">
-              Tip: If served from FastAPI at <span class="mono">/</span>, keep this as same origin.
-            </div>
           </div>
           <div>
             <label>Model</label>
@@ -331,10 +327,6 @@
         </div>
 
         <div class="sep"></div>
-        <div class="note">
-          This UI calls <span class="mono">POST /parse</span> and renders:
-          <b>meta</b>, <b>warnings</b>, <b>unmapped_columns</b>, and the full <b>parsed_data</b> table with filters.
-        </div>
 
         <div class="small err" id="lastError" style="margin-top:10px"></div>
       </section>
@@ -459,10 +451,6 @@
           <button id="btnPrev" disabled>Prev</button>
           <button id="btnNext" disabled>Next</button>
         </div>
-      </div>
-
-      <div class="small muted" style="margin-top:8px">
-        Pagination is client-side. Change <span class="mono">PAGE_SIZE</span> in code if you want more rows per page.
       </div>
     </section>
   </div>
