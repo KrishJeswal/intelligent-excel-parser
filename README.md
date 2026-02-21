@@ -1,69 +1,41 @@
-# Excel Data Cleaner (Single-sheet)
+## Excel Cleaner — Track A (Intelligent Excel Parser)
 
-FastAPI service that ingests messy `.xlsx` files, detects the header row, maps columns to a canonical **parameter registry** + **asset registry**, parses values deterministically, and returns a structured JSON response.
+Built a FastAPI service that takes messy `.xlsx` files, automatically detects the header row, maps columns to a canonical **Parameter Registry** + **Asset Registry** using an LLM (`gemini-2.5-flash-lite`), parses values deterministically (commas, %, YES/NO, N/A), and returns structured JSON with `parsed_data`, `unmapped_columns`, `warnings`, and `meta`. A lightweight dashboard at `/` demonstrates the full end-to-end flow.
 
-## Model choice
-- LLM: **Gemini Developer API** via `google-genai`
-- Model: `gemini-2.5-flash-lite`
-- LLM is used **once per file** to map column headers → canonical `param_name` (and optionally `asset_name`).
-- Value parsing and validations are deterministic.
+### Why Track A
+I chose **Track A** because data cleaning is one of the biggest bottlenecks in analytics and ML workflows, and having a reliable, repeatable way to normalize Excel data directly enables future tasks like building strong ML models from that data.
 
-> If `GEMINI_API_KEY` is not set, the service falls back to a deterministic fuzzy matcher (useful for local tests), and returns a warning.
-
-## Quickstart (local)
-
+### Setup / Run
+**Local**
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate
 source .venv/bin/activate
-
+pip install -U pip
 pip install -r requirements.txt
+
+Create .env in the project root:
+GEMINI_API_KEY=YOUR_KEY_HERE
+
+Generate sample files:
 python scripts/create_test_data.py
 
-cp .env.example .env
-
-uvicorn app.main:app --reload
-```
-
-Health check:
-```bash
-curl http://127.0.0.1:8000/health
-```
-
-Parse an Excel file:
-```bash
-curl -F "file=@sample_files/messy_data.xlsx" http://127.0.0.1:8000/parse
-```
-
-Run tests:
-```bash
-pytest -q
-```
-
-## Docker
-
-Create `.env`:
-```text
-GEMINI_API_KEY=YOUR_KEY
-```
-
 Run:
-```bash
+python -m uvicorn app.main:app --reload
+
+Open:
+Dashboard: http://127.0.0.1:8000/
+
+Docker
 docker-compose up --build
-```
 
-## Output format
+Future Improvements
 
-Response includes:
-- `status`: `success` or `error`
-- `header_row`: 1-indexed Excel row number
-- `parsed_data`: list of parsed cells `{row, col, param_name, asset_name, raw_value, parsed_value, confidence}`
-- `unmapped_columns`: columns that couldn't be mapped
-- `warnings`: detection/mapping warnings
-- `meta`: sheet name + basic size metadata
+Build a full end-to-end web application (saved uploads/runs, review UI for low-confidence mappings, exports).
 
-## Notes / Limitations
+Improve mapping accuracy using more signals (units + value patterns + applicability rules) and a feedback loop from user corrections.
 
-- Single-sheet only (first worksheet).
-- Asset extraction is deterministic using registry aliases; LLM focuses on parameter mapping.
-- Confidence is `high|medium|low` per mapped cell.
+Add validation/anomaly detection (e.g., efficiency > 100%, negative consumption) with actionable warnings.
+
+Support multi-sheet parsing and large files with chunking/streaming for performance.
+
+::contentReference[oaicite:0]{index=0}
