@@ -6,11 +6,8 @@ Built a FastAPI service that takes messy `.xlsx` files, automatically detects th
 I chose **Track A** because data cleaning is one of the biggest bottlenecks in analytics and ML workflows, and having a reliable, repeatable way to normalize Excel data directly enables future tasks like building strong ML models from that data.
 
 ### Setup / Run
-**Local**
-```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -U pip
 pip install -r requirements.txt
 
 Create .env in the project root:
@@ -28,7 +25,9 @@ Dashboard: http://127.0.0.1:8000/
 Docker
 docker-compose up --build
 
-Future Improvements
+or to avoid this you can just go to intelligent-excel-parser-ai.vercel.app
+
+### Future Improvements
 
 Build a full end-to-end web application (saved uploads/runs, review UI for low-confidence mappings, exports).
 
