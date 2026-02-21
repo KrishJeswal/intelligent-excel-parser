@@ -25,7 +25,7 @@ Dashboard: http://127.0.0.1:8000/
 Docker
 docker-compose up --build
 
-or to avoid this you can just go to intelligent-excel-parser-ai.vercel.app
+or to avoid this you can just go to https://intelligent-excel-parser-ai.vercel.app/
 
 ### Future Improvements
 
