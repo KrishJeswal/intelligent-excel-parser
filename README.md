@@ -36,5 +36,3 @@ Improve mapping accuracy using more signals (units + value patterns + applicabil
 Add validation/anomaly detection (e.g., efficiency > 100%, negative consumption) with actionable warnings.
 
 Support multi-sheet parsing and large files with chunking/streaming for performance.
-
-::contentReference[oaicite:0]{index=0}
