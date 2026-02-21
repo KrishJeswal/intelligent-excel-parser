@@ -1,0 +1,142 @@
+[
+  {
+    "name": "coal_consumption",
+    "display_name": "Coal Consumption",
+    "unit": "MT",
+    "category": "input",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "coal_gcv",
+    "display_name": "Coal GCV",
+    "unit": "kcal/kg",
+    "category": "input",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "steam_generation",
+    "display_name": "Steam Generation",
+    "unit": "T/hr",
+    "category": "output",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "steam_consumption",
+    "display_name": "Steam Consumption",
+    "unit": "T/hr",
+    "category": "input",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "power_generation",
+    "display_name": "Power Generation",
+    "unit": "MWh",
+    "category": "output",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "power_consumption",
+    "display_name": "Power Consumption",
+    "unit": "MWh",
+    "category": "input",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "power_export",
+    "display_name": "Power Export",
+    "unit": "MWh",
+    "category": "output",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "auxiliary_power",
+    "display_name": "Auxiliary Power",
+    "unit": "MWh",
+    "category": "input",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "production_output",
+    "display_name": "Production Output",
+    "unit": "MT",
+    "category": "output",
+    "section": "PRODUCTION"
+  },
+  {
+    "name": "water_consumption",
+    "display_name": "Water Consumption",
+    "unit": "KL",
+    "category": "input",
+    "section": "UTILITIES"
+  },
+  {
+    "name": "co2_emissions",
+    "display_name": "CO₂ Emissions",
+    "unit": "tco2e",
+    "category": "emission",
+    "section": "EMISSIONS"
+  },
+  {
+    "name": "so2_emissions",
+    "display_name": "SO₂ Emissions",
+    "unit": "kg",
+    "category": "emission",
+    "section": "EMISSIONS"
+  },
+  {
+    "name": "nox_emissions",
+    "display_name": "NOx Emissions",
+    "unit": "kg",
+    "category": "emission",
+    "section": "EMISSIONS"
+  },
+  {
+    "name": "fly_ash_generated",
+    "display_name": "Fly Ash Generated",
+    "unit": "MT",
+    "category": "output",
+    "section": "WASTE"
+  },
+  {
+    "name": "efficiency",
+    "display_name": "Boiler Efficiency",
+    "unit": "%",
+    "category": "calculated",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "specific_coal_consumption",
+    "display_name": "Specific Coal Consumption",
+    "unit": "kg/kWh",
+    "category": "calculated",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "heat_rate",
+    "display_name": "Heat Rate",
+    "unit": "kcal/kWh",
+    "category": "calculated",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "plant_load_factor",
+    "display_name": "Plant Load Factor",
+    "unit": "%",
+    "category": "calculated",
+    "section": "POWER PLANT"
+  },
+  {
+    "name": "lignite_consumption",
+    "display_name": "Lignite Consumption",
+    "unit": "MT",
+    "category": "input",
+    "section": "COGEN BOILER"
+  },
+  {
+    "name": "biomass_consumption",
+    "display_name": "Biomass Consumption",
+    "unit": "MT",
+    "category": "input",
+    "section": "COGEN BOILER"
+  }
+]

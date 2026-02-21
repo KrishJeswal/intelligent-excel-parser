@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Excel Cleaner Dashboard</title>
+  <style>
+    :root{
+      --bg:#0a0f1e;
+      --card:#0f1833;
+      --card2:#0c142b;
+      --text:#eaf0ff;
+      --muted:#a9b3d6;
+      --border:#233159;
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 16px;
+
+      --good:#35d07f;
+      --warn:#ffcc66;
+      --bad:#ff667a;
+
+      --chip:#15214a;
+      --btn:#24346d;
+      --btn2:#1e2b5a;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html, body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      overflow-x:hidden;
+      background:
+        radial-gradient(1000px 650px at 15% -10%, rgba(72,110,255,.25) 0%, rgba(10,15,30,0) 60%),
+        radial-gradient(900px 600px at 95% 0%, rgba(72,110,255,.18) 0%, rgba(10,15,30,0) 60%),
+        radial-gradient(900px 600px at 70% 110%, rgba(53,208,127,.12) 0%, rgba(10,15,30,0) 55%),
+        var(--bg);
+    }
+
+    a{color:#a9c2ff}
+    .wrap{max-width:1280px;margin:0 auto;padding:22px 18px 40px}
+    .topbar{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      margin-bottom:14px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.3px;
+    }
+    .brand p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.35;
+      font-size:13px;
+    }
+    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+    .card{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 45%),
+        var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .card h2{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color:#cdd6ff;
+    }
+
+    button{
+      cursor:pointer;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0)),
+        var(--btn);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    button:hover{background:var(--btn2)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+
+    input, select{
+      width:100%;
+      background:var(--card2);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:10px 10px;
+      border-radius:12px;
+      outline:none;
+    }
+
+    .mono{font-family:var(--mono)}
+    .muted{color:var(--muted)}
+    .small{font-size:12px;color:var(--muted)}
+    .note{font-size:12px;color:var(--muted);line-height:1.45}
+
+    .chip{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:6px 10px;border-radius:999px;
+      background:var(--chip);
+      border:1px solid var(--border);
+      font-size:12px;
+      font-weight:700;
+    }
+    .chip.good{border-color:rgba(53,208,127,.55);color:#caffdf}
+    .chip.warn{border-color:rgba(255,204,102,.55);color:#ffe1a6}
+    .chip.bad{border-color:rgba(255,102,122,.6);color:#ffd0d6}
+
+    .layout{
+      display:grid;
+      grid-template-columns: 380px 1fr; 
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .layout{grid-template-columns:1fr}
+    }
+
+    .fieldRow{
+      display:grid;
+      grid-template-columns: 1fr 160px;
+      gap:10px;
+      align-items:end;
+    }
+    @media (max-width: 520px){
+      .fieldRow{grid-template-columns:1fr}
+    }
+    label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+    .drop{
+      border:1.5px dashed rgba(170,190,255,.35);
+      background:rgba(255,255,255,.02);
+      border-radius:14px;
+      padding:14px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .drop.drag{
+      border-color:rgba(53,208,127,.6);
+      box-shadow:0 0 0 4px rgba(53,208,127,.10) inset;
+    }
+    .drop .left{display:flex;flex-direction:column;gap:6px}
+    .btnRow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+    .kpiGrid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .kpi{
+      background:var(--card2);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px;
+      min-height:64px;
+    }
+    .kpi .label{color:var(--muted);font-size:12px}
+    .kpi .value{margin-top:7px;font-size:16px;font-weight:800}
+
+    .summaryGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin-bottom:12px;
+    }
+    @media(max-width: 980px){
+      .summaryGrid{grid-template-columns: repeat(2, minmax(0, 1fr))}
+    }
+    @media(max-width: 520px){
+      .summaryGrid{grid-template-columns:1fr}
+    }
+
+    .tabs{
+      display:flex;gap:8px;flex-wrap:wrap;
+      margin:10px 0 8px;
+    }
+    .tabBtn{
+      background:rgba(255,255,255,.02);
+      border:1px solid var(--border);
+      padding:8px 10px;border-radius:999px;
+      font-weight:800;font-size:12px;color:#dbe3ff;
+    }
+    .tabBtn.active{
+      border-color:rgba(72,110,255,.7);
+      box-shadow:0 0 0 4px rgba(72,110,255,.12) inset;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px;
+      max-height:260px;
+      overflow:auto;
+    }
+    .list{margin:0;padding-left:18px}
+    .list li{margin:6px 0}
+
+    .tableWrap{
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background:var(--card2);
+    }
+    table{
+      width:100%;
+      border-collapse:separate;border-spacing:0;
+      min-width:760px; 
+    }
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      text-align:left;
+      vertical-align:top;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    td.wrap{white-space:normal; overflow-wrap:anywhere}
+    th{
+      position:sticky;top:0;
+      background:rgba(12,20,43,.95);
+      backdrop-filter: blur(8px);
+      z-index:1;
+      color:#cfd6ff;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+    tr:hover td{background:rgba(255,255,255,.02)}
+
+    .parsedCard{margin-top:14px}
+    .controls{
+      display:grid;
+      grid-template-columns: 1.2fr .9fr .9fr .8fr 140px;
+      gap:10px;
+      align-items:end;
+      margin:10px 0 12px;
+    }
+    @media(max-width: 980px){
+      .controls{grid-template-columns: 1fr 1fr}
+    }
+
+    .footerRow{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pill{
+      padding:6px 10px;border-radius:999px;border:1px solid var(--border);
+      background:rgba(255,255,255,.02);color:var(--muted);font-size:12px;
+    }
+
+    .sep{height:1px;background:rgba(255,255,255,.06);margin:12px 0}
+    .err{color:#ffd0d6}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Excel Cleaner Dashboard</h1>
+        <p>Upload an <span class="mono">.xlsx</span> → detect header row → map to registries → parse values → view JSON, warnings, unmapped cols, and parsed table.</p>
+      </div>
+      <div class="actions">
+        <button id="btnHealth">Check /health</button>
+        <button id="btnDownloadJson" disabled>Download JSON</button>
+        <button id="btnDownloadCsv" disabled>Download parsed_data CSV</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <h2>Connection + Upload</h2>
+
+        <div class="fieldRow">
+          <div>
+            <label>API Base URL</label>
+            <input id="apiBase" placeholder="http://127.0.0.1:8000" />
+            <div class="small" style="margin-top:6px">
+              Tip: If served from FastAPI at <span class="mono">/</span>, keep this as same origin.
+            </div>
+          </div>
+          <div>
+            <label>Model</label>
+            <input value="gemini-2.5-flash-lite" disabled />
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div id="drop" class="drop">
+          <div class="left">
+            <div style="font-weight:900">Drop your <span class="mono">.xlsx</span> here</div>
+            <div class="small">or click “Choose file”</div>
+          </div>
+          <div class="btnRow">
+            <input id="file" type="file" accept=".xlsx" style="display:none" />
+            <button id="btnPick">Choose file</button>
+            <button id="btnParse" disabled>Parse</button>
+          </div>
+        </div>
+
+        <div class="kpiGrid">
+          <div class="kpi">
+            <div class="label">Selected file</div>
+            <div class="value mono" id="kFile">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Health</div>
+            <div class="value" id="kHealth"><span class="chip warn">Unknown</span></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Last status</div>
+            <div class="value" id="kStatus"><span class="chip warn">No run</span></div>
+          </div>
+          <div class="kpi">
+            <div class="label">Header row</div>
+            <div class="value mono" id="kHeader">—</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+        <div class="note">
+          This UI calls <span class="mono">POST /parse</span> and renders:
+          <b>meta</b>, <b>warnings</b>, <b>unmapped_columns</b>, and the full <b>parsed_data</b> table with filters.
+        </div>
+
+        <div class="small err" id="lastError" style="margin-top:10px"></div>
+      </section>
+
+      <section class="card">
+        <h2>Run Summary</h2>
+
+        <div class="summaryGrid">
+          <div class="kpi">
+            <div class="label">Sheet</div>
+            <div class="value mono" id="kSheet">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Rows / Cols</div>
+            <div class="value mono" id="kSize">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Parsed cells</div>
+            <div class="value mono" id="kParsed">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Unmapped cols</div>
+            <div class="value mono" id="kUnmapped">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="label">Confidence: High</div>
+            <div class="value mono" id="kHigh">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Confidence: Medium</div>
+            <div class="value mono" id="kMed">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Confidence: Low</div>
+            <div class="value mono" id="kLow">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Mapped cols</div>
+            <div class="value mono" id="kMappedCols">—</div>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tabBtn active" data-tab="warnings">Warnings</button>
+          <button class="tabBtn" data-tab="unmapped">Unmapped columns</button>
+        </div>
+
+        <div id="tab-warnings" class="panel">
+          <ul id="warnings" class="list"></ul>
+          <div id="warningsEmpty" class="small muted">—</div>
+        </div>
+
+        <div id="tab-unmapped" class="panel" style="display:none">
+          <div id="unmappedEmpty" class="small muted">—</div>
+          <div id="unmappedTable" class="tableWrap" style="display:none;margin-top:8px">
+            <table style="min-width:680px">
+              <thead>
+                <tr>
+                  <th style="width:70px">Col</th>
+                  <th style="width:240px">Header</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="unmappedBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card parsedCard">
+      <h2>Parsed Data</h2>
+
+      <div class="controls">
+        <div>
+          <label>Search (param / asset / raw)</label>
+          <input id="q" placeholder="e.g. coal, TG-1, 1,234.56" />
+        </div>
+        <div>
+          <label>Param</label>
+          <select id="fParam"></select>
+        </div>
+        <div>
+          <label>Asset</label>
+          <select id="fAsset"></select>
+        </div>
+        <div>
+          <label>Confidence</label>
+          <select id="fConf">
+            <option value="">All</option>
+            <option value="high">high</option>
+            <option value="medium">medium</option>
+            <option value="low">low</option>
+          </select>
+        </div>
+        <div class="btnRow" style="justify-content:flex-end">
+          <button id="btnReset" disabled>Reset</button>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table style="min-width:820px">
+          <thead>
+            <tr>
+              <th style="width:90px">Row</th>
+              <th style="width:70px">Col</th>
+              <th style="width:220px">param_name</th>
+              <th style="width:140px">asset_name</th>
+              <th style="width:260px">raw_value</th>
+              <th style="width:160px">parsed_value</th>
+              <th style="width:120px">confidence</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="footerRow">
+        <div class="pill" id="shown">Showing 0</div>
+        <div class="btnRow">
+          <button id="btnPrev" disabled>Prev</button>
+          <button id="btnNext" disabled>Next</button>
+        </div>
+      </div>
+
+      <div class="small muted" style="margin-top:8px">
+        Pagination is client-side. Change <span class="mono">PAGE_SIZE</span> in code if you want more rows per page.
+      </div>
+    </section>
+  </div>
+
+<script>
+  let selectedFile = null;
+  let lastResponse = null;
+  let filtered = [];
+  let page = 0;
+  const PAGE_SIZE = 120;
+
+  const apiBase = document.getElementById('apiBase');
+  const btnHealth = document.getElementById('btnHealth');
+  const btnPick = document.getElementById('btnPick');
+  const btnParse = document.getElementById('btnParse');
+  const btnReset = document.getElementById('btnReset');
+  const btnDownloadJson = document.getElementById('btnDownloadJson');
+  const btnDownloadCsv = document.getElementById('btnDownloadCsv');
+
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('file');
+
+  const kFile = document.getElementById('kFile');
+  const kHealth = document.getElementById('kHealth');
+  const kStatus = document.getElementById('kStatus');
+  const kHeader = document.getElementById('kHeader');
+  const kSheet = document.getElementById('kSheet');
+  const kSize = document.getElementById('kSize');
+  const kParsed = document.getElementById('kParsed');
+  const kUnmapped = document.getElementById('kUnmapped');
+  const kHigh = document.getElementById('kHigh');
+  const kMed = document.getElementById('kMed');
+  const kLow = document.getElementById('kLow');
+  const kMappedCols = document.getElementById('kMappedCols');
+
+  const warningsEl = document.getElementById('warnings');
+  const warningsEmpty = document.getElementById('warningsEmpty');
+  const unmappedEmpty = document.getElementById('unmappedEmpty');
+  const unmappedTable = document.getElementById('unmappedTable');
+  const unmappedBody = document.getElementById('unmappedBody');
+  const lastError = document.getElementById('lastError');
+
+  const q = document.getElementById('q');
+  const fParam = document.getElementById('fParam');
+  const fAsset = document.getElementById('fAsset');
+  const fConf = document.getElementById('fConf');
+
+  const tbody = document.getElementById('tbody');
+  const shown = document.getElementById('shown');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+
+  const tabBtns = Array.from(document.querySelectorAll('.tabBtn'));
+  const tabWarnings = document.getElementById('tab-warnings');
+  const tabUnmapped = document.getElementById('tab-unmapped');
+
+  tabBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      tabBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const t = btn.dataset.tab;
+      if(t === 'warnings'){
+        tabWarnings.style.display = '';
+        tabUnmapped.style.display = 'none';
+      }else{
+        tabWarnings.style.display = 'none';
+        tabUnmapped.style.display = '';
+      }
+    });
+  });
+
+  apiBase.value = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000';
+
+  function chip(label, kind){
+    const cls = kind === 'good' ? 'good' : kind === 'bad' ? 'bad' : 'warn';
+    return `<span class="chip ${cls}">${label}</span>`;
+  }
+  function setStatusChip(el, status){
+    if(status === 'success') el.innerHTML = chip('success','good');
+    else if(status === 'error') el.innerHTML = chip('error','bad');
+    else el.innerHTML = chip(status,'warn');
+  }
+  function safeStr(v){
+    if(v === null || v === undefined) return '';
+    return String(v);
+  }
+  function normalizeBase(url){
+    return url.replace(/\/+$/,'');
+  }
+  function downloadText(filename, text, mime='application/json'){
+    const blob = new Blob([text], {type: mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+  }
+  function toCSV(rows){
+    const headers = ['row','col','param_name','asset_name','raw_value','parsed_value','confidence'];
+    const esc = (v) => {
+      const s = safeStr(v);
+      if(/[",\n]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+      return s;
+    };
+    const lines = [];
+    lines.push(headers.join(','));
+    for(const r of rows){
+      lines.push([
+        r.row, r.col, r.param_name, r.asset_name ?? '',
+        esc(r.raw_value),
+        (r.parsed_value ?? ''),
+        r.confidence
+      ].join(','));
+    }
+    return lines.join('\n');
+  }
+
+  btnPick.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(f) setFile(f);
+  });
+
+  ;['dragenter','dragover'].forEach(ev=>{
+    drop.addEventListener(ev, (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.add('drag');
+    });
+  });
+  ;['dragleave','drop'].forEach(ev=>{
+    drop.addEventListener(ev, (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      drop.classList.remove('drag');
+    });
+  });
+  drop.addEventListener('drop', (e)=>{
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(f) setFile(f);
+  });
+
+  function setFile(f){
+    selectedFile = f;
+    kFile.textContent = f.name;
+    btnParse.disabled = false;
+    lastError.textContent = '';
+  }
+
+  btnHealth.addEventListener('click', async ()=>{
+    const base = normalizeBase(apiBase.value || '');
+    try{
+      kHealth.innerHTML = chip('Checking…','warn');
+      const r = await fetch(base + '/health');
+      const j = await r.json().catch(()=> ({}));
+      if(r.ok && j.status === 'ok') kHealth.innerHTML = chip('OK','good');
+      else kHealth.innerHTML = chip('Not OK','bad');
+    }catch(err){
+      kHealth.innerHTML = chip('Failed','bad');
+      lastError.textContent = 'Health check failed: ' + err;
+    }
+  });
+
+  btnParse.addEventListener('click', async ()=>{
+    if(!selectedFile) return;
+    await runParse();
+  });
+
+  async function runParse(){
+    const base = normalizeBase(apiBase.value || '');
+    btnParse.disabled = true;
+    btnReset.disabled = true;
+    btnDownloadJson.disabled = true;
+    btnDownloadCsv.disabled = true;
+    setStatusChip(kStatus, 'Running…');
+    lastError.textContent = '';
+
+    try{
+      const fd = new FormData();
+      fd.append('file', selectedFile);
+
+      const res = await fetch(base + '/parse', { method:'POST', body: fd });
+      const data = await res.json();
+
+      lastResponse = data;
+      if(!res.ok || data.status === 'error'){
+        setStatusChip(kStatus, 'error');
+        lastError.textContent = (data.warnings && data.warnings[0]) ? data.warnings[0] : ('HTTP ' + res.status);
+        btnParse.disabled = false;
+        return;
+      }
+      setStatusChip(kStatus, 'success');
+      renderResponse(data);
+
+      btnDownloadJson.disabled = false;
+      btnDownloadCsv.disabled = false;
+      btnReset.disabled = false;
+      btnParse.disabled = false;
+
+    }catch(err){
+      setStatusChip(kStatus, 'error');
+      lastError.textContent = 'Parse failed: ' + err;
+      btnParse.disabled = false;
+    }
+  }
+
+  btnReset.addEventListener('click', ()=>{
+    q.value = '';
+    fParam.value = '';
+    fAsset.value = '';
+    fConf.value = '';
+    applyFilters();
+  });
+
+  btnDownloadJson.addEventListener('click', ()=>{
+    if(!lastResponse) return;
+    const name = (selectedFile ? selectedFile.name.replace(/\.xlsx$/i,'') : 'response') + '.json';
+    downloadText(name, JSON.stringify(lastResponse, null, 2), 'application/json');
+  });
+
+  btnDownloadCsv.addEventListener('click', ()=>{
+    if(!lastResponse) return;
+    const rows = lastResponse.parsed_data || [];
+    const name = (selectedFile ? selectedFile.name.replace(/\.xlsx$/i,'') : 'parsed_data') + '.csv';
+    downloadText(name, toCSV(rows), 'text/csv');
+  });
+
+  q.addEventListener('input', ()=> applyFilters());
+  fParam.addEventListener('change', ()=> applyFilters());
+  fAsset.addEventListener('change', ()=> applyFilters());
+  fConf.addEventListener('change', ()=> applyFilters());
+
+  btnPrev.addEventListener('click', ()=>{
+    if(page > 0){ page--; renderTable(); }
+  });
+  btnNext.addEventListener('click', ()=>{
+    const maxPage = Math.floor((filtered.length - 1) / PAGE_SIZE);
+    if(page < maxPage){ page++; renderTable(); }
+  });
+
+  function renderResponse(data){
+    kHeader.textContent = data.header_row ?? '—';
+    kSheet.textContent = (data.meta && data.meta.sheet) ? data.meta.sheet : '—';
+    const rows = (data.meta && data.meta.rows) ? data.meta.rows : '—';
+    const cols = (data.meta && data.meta.cols) ? data.meta.cols : '—';
+    kSize.textContent = rows + ' / ' + cols;
+
+    const parsed = data.parsed_data || [];
+    kParsed.textContent = parsed.length;
+
+    const unmapped = data.unmapped_columns || [];
+    kUnmapped.textContent = unmapped.length;
+
+    const c = {high:0, medium:0, low:0};
+    const colSet = new Set();
+    for(const p of parsed){
+      if(p.confidence && c[p.confidence] !== undefined) c[p.confidence]++;
+      colSet.add(p.col);
+    }
+    kHigh.textContent = c.high;
+    kMed.textContent = c.medium;
+    kLow.textContent = c.low;
+    kMappedCols.textContent = colSet.size;
+
+    warningsEl.innerHTML = '';
+    const warnings = data.warnings || [];
+    if(warnings.length){
+      warningsEmpty.style.display = 'none';
+      for(const w of warnings){
+        const li = document.createElement('li');
+        li.textContent = w;
+        warningsEl.appendChild(li);
+      }
+    }else{
+      warningsEmpty.style.display = 'block';
+      warningsEmpty.textContent = '—';
+    }
+
+    unmappedBody.innerHTML = '';
+    if(unmapped.length){
+      unmappedEmpty.style.display = 'none';
+      unmappedTable.style.display = 'block';
+      for(const u of unmapped){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono">${u.col}</td>
+          <td class="mono">${safeStr(u.header)}</td>
+          <td class="muted wrap">${safeStr(u.reason)}</td>
+        `;
+        unmappedBody.appendChild(tr);
+      }
+    } else {
+      unmappedEmpty.style.display = 'block';
+      unmappedEmpty.textContent = '—';
+      unmappedTable.style.display = 'none';
+    }
+
+    const uniqParam = new Set();
+    const uniqAsset = new Set();
+    for(const p of parsed){
+      if(p.param_name) uniqParam.add(p.param_name);
+      if(p.asset_name) uniqAsset.add(p.asset_name);
+    }
+
+    fParam.innerHTML = `<option value="">All</option>` +
+      Array.from(uniqParam).sort().map(v=>`<option value="${v}">${v}</option>`).join('');
+
+    fAsset.innerHTML = `<option value="">All</option>` +
+      Array.from(uniqAsset).sort().map(v=>`<option value="${v}">${v}</option>`).join('');
+
+    page = 0;
+    applyFilters();
+  }
+
+  function applyFilters(){
+    if(!lastResponse){
+      filtered = [];
+      renderTable();
+      return;
+    }
+    const parsed = lastResponse.parsed_data || [];
+    const qq = (q.value || '').trim().toLowerCase();
+    const p = fParam.value || '';
+    const a = fAsset.value || '';
+    const c = fConf.value || '';
+
+    filtered = parsed.filter(row=>{
+      if(p && row.param_name !== p) return false;
+      if(a && (row.asset_name || '') !== a) return false;
+      if(c && row.confidence !== c) return false;
+
+      if(qq){
+        const blob = (
+          safeStr(row.param_name) + ' ' +
+          safeStr(row.asset_name) + ' ' +
+          safeStr(row.raw_value) + ' ' +
+          safeStr(row.parsed_value) + ' ' +
+          safeStr(row.row) + ' ' + safeStr(row.col)
+        ).toLowerCase();
+        return blob.includes(qq);
+      }
+      return true;
+    });
+
+    page = 0;
+    renderTable();
+  }
+
+  function renderTable(){
+    tbody.innerHTML = '';
+    const start = page * PAGE_SIZE;
+    const end = Math.min(filtered.length, start + PAGE_SIZE);
+
+    for(let i=start; i<end; i++){
+      const r = filtered[i];
+      const tr = document.createElement('tr');
+      const conf = r.confidence || '—';
+      const confChip =
+        conf === 'high' ? chip('high','good') :
+        conf === 'medium' ? chip('medium','warn') :
+        conf === 'low' ? chip('low','bad') : chip(conf,'warn');
+
+      tr.innerHTML = `
+        <td class="mono">${safeStr(r.row)}</td>
+        <td class="mono">${safeStr(r.col)}</td>
+        <td class="mono">${safeStr(r.param_name)}</td>
+        <td class="mono">${safeStr(r.asset_name ?? '')}</td>
+        <td class="mono">${safeStr(r.raw_value)}</td>
+        <td class="mono">${r.parsed_value === null || r.parsed_value === undefined ? '' : safeStr(r.parsed_value)}</td>
+        <td>${confChip}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    const maxPage = filtered.length ? Math.floor((filtered.length - 1) / PAGE_SIZE) : 0;
+    btnPrev.disabled = page <= 0;
+    btnNext.disabled = page >= maxPage;
+
+    shown.textContent = `Showing ${filtered.length ? (start+1) : 0}–${end} of ${filtered.length} (page ${filtered.length ? (page+1) : 0}/${filtered.length ? (maxPage+1) : 0})`;
+  }
+
+  btnPick.addEventListener('click', ()=> fileInput.click());
+</script>
+</body>
+</html>

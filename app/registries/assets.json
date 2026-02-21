@@ -1,0 +1,32 @@
+[
+  {
+    "name": "AFBC-1",
+    "display_name": "AFBC Boiler 1",
+    "type": "boiler"
+  },
+  {
+    "name": "AFBC-2",
+    "display_name": "AFBC Boiler 2",
+    "type": "boiler"
+  },
+  {
+    "name": "TG-1",
+    "display_name": "Turbo Generator 1",
+    "type": "turbine"
+  },
+  {
+    "name": "TG-2",
+    "display_name": "Turbo Generator 2",
+    "type": "turbine"
+  },
+  {
+    "name": "VSF",
+    "display_name": "Viscose Staple Fiber",
+    "type": "product"
+  },
+  {
+    "name": "KILN-1",
+    "display_name": "Rotary Kiln 1",
+    "type": "kiln"
+  }
+]
