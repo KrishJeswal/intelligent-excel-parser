@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from app.services.pipeline import parse_excel
 
-load_dotenv()  # optional but helpful for local runs
+load_dotenv()  
 
 app = FastAPI(title="Excel Data Cleaner", version="1.0.0")
 
