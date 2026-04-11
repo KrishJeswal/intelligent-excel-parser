@@ -1,0 +1,13 @@
+[
+  { "name": "TG-1", "display_name": "Turbine Generator 1" },
+  { "name": "TG-2", "display_name": "Turbine Generator 2" },
+  { "name": "TG-3", "display_name": "Turbine Generator 3" },
+  { "name": "TG-4", "display_name": "Turbine Generator 4" },
+  { "name": "AFBC-1", "display_name": "AFBC Boiler 1" },
+  { "name": "AFBC-2", "display_name": "AFBC Boiler 2" },
+  { "name": "AFBC-3", "display_name": "AFBC Boiler 3" },
+  { "name": "AFBC-4", "display_name": "AFBC Boiler 4" },
+  { "name": "KILN-1", "display_name": "Kiln 1" },
+  { "name": "KILN-2", "display_name": "Kiln 2" },
+  { "name": "KILN-3", "display_name": "Kiln 3" }
+]

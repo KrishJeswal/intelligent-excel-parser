@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Intelligent Excel Parser</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --surface2: #1c2330;
+    --border:   #2a3441;
+    --accent:   #f0b429;
+    --accent2:  #e05c1a;
+    --green:    #3fb950;
+    --red:      #f85149;
+    --blue:     #58a6ff;
+    --muted:    #6e7b8b;
+    --text:     #e6edf3;
+    --textdim:  #8b95a1;
+    --mono:     'Space Mono', monospace;
+    --sans:     'DM Sans', sans-serif;
+    --r:        6px;
+    --glow:     0 0 20px rgba(240,180,41,0.12);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+  header{border-bottom:1px solid var(--border);padding:0 32px;height:58px;display:flex;align-items:center;gap:16px;background:var(--surface);position:sticky;top:0;z-index:100}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:32px;height:32px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+  .logo-text{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.04em}
+  .logo-text span{color:var(--accent)}
+  .spacer{flex:1}
+  .status-pill{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);display:flex;align-items:center;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .container{max-width:1280px;margin:0 auto;padding:32px}
+  .drop-zone{border:1.5px dashed var(--border);border-radius:10px;padding:52px 32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s;position:relative;background:var(--surface)}
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(240,180,41,.04);box-shadow:var(--glow)}
+  .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .drop-icon{font-size:36px;margin-bottom:12px;display:block}
+  .drop-title{font-family:var(--mono);font-size:15px;font-weight:700;margin-bottom:6px}
+  .drop-sub{color:var(--muted);font-size:13px}
+  .drop-sub strong{color:var(--accent);font-weight:600}
+  .file-selected{display:flex;align-items:center;gap:10px;background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.25);border-radius:var(--r);padding:10px 14px;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .file-selected .file-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .parse-btn{margin-top:16px;width:100%;padding:13px;background:var(--accent);color:#0d1117;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.08em;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .parse-btn:hover{opacity:.88}
+  .parse-btn:active{transform:scale(.99)}
+  .parse-btn:disabled{opacity:.38;cursor:not-allowed}
+  .spinner{width:14px;height:14px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .meta-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;animation:fadeUp .3s ease}
+  .meta-chip{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-family:var(--mono);font-size:12px;color:var(--textdim)}
+  .meta-chip strong{color:var(--text)}
+  .section-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .section-head h2{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--textdim)}
+  .badge{background:var(--surface2);border:1px solid var(--border);color:var(--textdim);font-family:var(--mono);font-size:11px;padding:1px 8px;border-radius:10px}
+  .badge.warn{color:var(--accent);border-color:rgba(240,180,41,.3);background:rgba(240,180,41,.06)}
+  .badge.err{color:var(--red);border-color:rgba(248,81,73,.3);background:rgba(248,81,73,.06)}
+  .table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:28px;animation:fadeUp .35s ease}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead{background:var(--surface2);border-bottom:1px solid var(--border)}
+  th{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;white-space:nowrap}
+  td{padding:9px 14px;border-bottom:1px solid rgba(42,52,65,.6);vertical-align:middle;color:var(--textdim)}
+  td.mono{font-family:var(--mono);font-size:12px}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:rgba(255,255,255,.025)}
+  td strong{color:var(--text)}
+  .conf{display:inline-flex;align-items:center;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.04em}
+  .conf.high{background:rgba(63,185,80,.12);color:var(--green)}
+  .conf.medium{background:rgba(240,180,41,.12);color:var(--accent)}
+  .conf.low{background:rgba(248,81,73,.12);color:var(--red)}
+  .param-tag{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.2);color:var(--blue);font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px}
+  .asset-tag{background:rgba(240,92,26,.1);border:1px solid rgba(240,92,26,.2);color:var(--accent2);font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:4px}
+  .null-tag{color:var(--muted);font-family:var(--mono);font-size:11px}
+  .warnings-list{display:flex;flex-direction:column;gap:6px;margin-bottom:28px;animation:fadeUp .4s ease}
+  .warning-item{display:flex;gap:10px;align-items:flex-start;background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--textdim)}
+  .w-icon{color:var(--accent);flex-shrink:0}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .filter-btn{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--textdim);cursor:pointer;transition:all .15s}
+  .filter-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .filter-btn.active{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:700}
+  .search-wrap{position:relative;margin-bottom:14px}
+  .search-wrap input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:9px 14px 9px 36px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;transition:border-color .2s}
+  .search-wrap input:focus{border-color:var(--accent)}
+  .search-wrap input::placeholder{color:var(--muted)}
+  .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+  .state-box{border:1px solid var(--border);border-radius:8px;padding:48px 32px;text-align:center;color:var(--muted);margin-bottom:28px}
+  .state-box .si{font-size:32px;display:block;margin-bottom:12px}
+  .state-box p{font-size:13px;max-width:360px;margin:0 auto}
+  .error-box{background:rgba(248,81,73,.05);border-color:rgba(248,81,73,.3)}
+  .error-box .si{color:var(--red)}
+  .hidden{display:none!important}
+  hr.divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+  .table-scroll{overflow-x:auto}
+  .pagination{display:flex;align-items:center;gap:8px;padding:12px 14px;border-top:1px solid var(--border);justify-content:space-between;background:var(--surface)}
+  .page-info{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .page-btns{display:flex;gap:4px}
+  .page-btn{width:28px;height:28px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--textdim);font-family:var(--mono);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .page-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .page-btn:disabled{opacity:.3;cursor:not-allowed}
+  .page-btn.cur{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:700}
+  .upload-mb{margin-bottom:32px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">EXCEL<span>_</span>PARSER</div>
+  </div>
+  <span class="spacer"></span>
+  <div class="status-pill"><span class="dot"></span>API READY</div>
+</header>
+
+<div class="container">
+  <div class="upload-mb">
+    <div class="drop-zone" id="dz">
+      <input type="file" id="fi" accept=".xlsx" />
+      <span class="drop-icon">📊</span>
+      <div class="drop-title">Drop your .xlsx file here</div>
+      <div class="drop-sub">or click to browse &nbsp;·&nbsp; <strong>.xlsx only</strong></div>
+    </div>
+    <div class="file-selected hidden" id="fs">
+      <span>📄</span>
+      <span class="file-name" id="fn"></span>
+      <span id="fsz" style="color:var(--muted)"></span>
+    </div>
+    <button class="parse-btn" id="pb" disabled>
+      <div class="spinner" id="sp"></div>
+      <span id="pbl">▶ &nbsp;PARSE FILE</span>
+    </button>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="meta-bar" id="metaBar"></div>
+    <div id="warnSec" class="hidden">
+      <div class="section-head"><h2>Warnings</h2><span class="badge warn" id="wc"></span></div>
+      <div class="warnings-list" id="wl"></div>
+    </div>
+    <div>
+      <div class="section-head"><h2>Parsed Data</h2><span class="badge" id="pc"></span></div>
+      <div class="filters">
+        <button class="filter-btn active" data-f="all">All</button>
+        <button class="filter-btn" data-f="high">High</button>
+        <button class="filter-btn" data-f="medium">Medium</button>
+        <button class="filter-btn" data-f="low">Low</button>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="si" placeholder="Filter by parameter, asset, value…" />
+      </div>
+      <div id="pt"></div>
+    </div>
+    <hr class="divider" />
+    <div>
+      <div class="section-head"><h2>Unmapped Columns</h2><span class="badge err" id="uc"></span></div>
+      <div id="ut"></div>
+    </div>
+  </div>
+
+  <div id="errState" class="state-box error-box hidden">
+    <span class="si">⚠</span>
+    <p id="em"></p>
+  </div>
+</div>
+
+<script>
+const dz=document.getElementById('dz'),fi=document.getElementById('fi'),fs=document.getElementById('fs');
+const fn=document.getElementById('fn'),fsz=document.getElementById('fsz');
+const pb=document.getElementById('pb'),sp=document.getElementById('sp'),pbl=document.getElementById('pbl');
+const results=document.getElementById('results'),errState=document.getElementById('errState'),em=document.getElementById('em');
+let file=null,allRows=[],cf='all',sq='',pg=1;
+const PS=50;
+
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',()=>{if(fi.files[0])setFile(fi.files[0])});
+
+function setFile(f){
+  file=f;fn.textContent=f.name;fsz.textContent=fmtB(f.size);
+  fs.classList.remove('hidden');pb.disabled=false;
+  results.classList.add('hidden');errState.classList.add('hidden');
+}
+function fmtB(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'}
+
+pb.addEventListener('click',async()=>{
+  if(!file)return;
+  setLoad(true);results.classList.add('hidden');errState.classList.add('hidden');
+  const fd=new FormData();fd.append('file',file);
+  try{
+    const r=await fetch('/parse',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok||d.status==='error') showErr((d.warnings||['Unknown error']).join(' · '));
+    else render(d);
+  }catch(e){showErr('Network error: '+e.message);}
+  finally{setLoad(false);}
+});
+
+function setLoad(on){
+  pb.disabled=on;sp.style.display=on?'block':'none';
+  pbl.textContent=on?'PARSING…':'▶  PARSE FILE';
+}
+function showErr(msg){em.textContent=msg;errState.classList.remove('hidden');}
+
+function render(data){
+  allRows=data.parsed_data||[];cf='all';sq='';pg=1;
+  const m=data.meta||{};
+  document.getElementById('metaBar').innerHTML=[
+    ch('📄 Sheet',m.sheet||'—'),ch('📏 Rows',m.rows??'—'),ch('📊 Cols',m.cols??'—'),
+    ch('🔖 Header Row',data.header_row??'—'),ch('✅ Mapped',allRows.length),
+    ch('⚠ Unmapped',(data.unmapped_columns||[]).length)
+  ].join('');
+  const warns=data.warnings||[];
+  const ws=document.getElementById('warnSec');
+  if(warns.length){
+    document.getElementById('wc').textContent=warns.length;
+    document.getElementById('wl').innerHTML=warns.map(w=>`<div class="warning-item"><span class="w-icon">⚠</span><span>${esc(w)}</span></div>`).join('');
+    ws.classList.remove('hidden');
+  } else ws.classList.add('hidden');
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f==='all'));
+  document.getElementById('si').value='';
+  renderPT();renderUT(data.unmapped_columns||[]);
+  results.classList.remove('hidden');
+}
+
+function ch(l,v){return`<div class="meta-chip">${esc(l)}&nbsp;<strong>${esc(String(v))}</strong></div>`}
+
+function renderPT(){
+  const con=document.getElementById('pt');
+  let rows=allRows;
+  if(cf!=='all')rows=rows.filter(r=>r.confidence===cf);
+  if(sq){const q=sq.toLowerCase();rows=rows.filter(r=>(r.param_name||'').toLowerCase().includes(q)||(r.asset_name||'').toLowerCase().includes(q)||String(r.raw_value||'').toLowerCase().includes(q)||String(r.parsed_value??'').toLowerCase().includes(q));}
+  document.getElementById('pc').textContent=rows.length;
+  if(!rows.length){con.innerHTML=`<div class="state-box"><span class="si">🔎</span><p>No results match your filter.</p></div>`;return;}
+  const tot=rows.length,tp=Math.ceil(tot/PS);
+  pg=Math.min(pg,tp);
+  const sl=rows.slice((pg-1)*PS,pg*PS);
+  const tb=sl.map(r=>`<tr>
+    <td class="mono">${r.row}</td><td class="mono">${r.col}</td>
+    <td><span class="param-tag">${esc(r.param_name||'—')}</span></td>
+    <td>${r.asset_name?`<span class="asset-tag">${esc(r.asset_name)}</span>`:`<span class="null-tag">—</span>`}</td>
+    <td class="mono">${esc(String(r.raw_value??'—'))}</td>
+    <td class="mono"><strong>${r.parsed_value!==null&&r.parsed_value!==undefined?r.parsed_value:`<span class="null-tag">null</span>`}</strong></td>
+    <td><span class="conf ${r.confidence}">${r.confidence.toUpperCase()}</span></td>
+  </tr>`).join('');
+  const pag=tp>1?buildPag(pg,tp,tot):'';
+  con.innerHTML=`<div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>ROW</th><th>COL</th><th>PARAMETER</th><th>ASSET</th><th>RAW VALUE</th><th>PARSED</th><th>CONF</th></tr></thead><tbody>${tb}</tbody></table></div>${pag}</div>`;
+  con.querySelectorAll('.page-btn[data-p]').forEach(b=>b.addEventListener('click',()=>{pg=parseInt(b.dataset.p);renderPT();con.scrollIntoView({behavior:'smooth',block:'start'});}));
+}
+
+function buildPag(p,tp,tot){
+  const s=(p-1)*PS+1,e=Math.min(p*PS,tot);
+  let b=`<button class="page-btn" data-p="${p-1}" ${p<=1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=tp;i++){
+    if(i===1||i===tp||Math.abs(i-p)<=1)b+=`<button class="page-btn ${i===p?'cur':''}" data-p="${i}">${i}</button>`;
+    else if(Math.abs(i-p)===2)b+=`<span style="color:var(--muted);font-family:var(--mono);font-size:12px;padding:0 4px">…</span>`;
+  }
+  b+=`<button class="page-btn" data-p="${p+1}" ${p>=tp?'disabled':''}>›</button>`;
+  return`<div class="pagination"><span class="page-info">Showing ${s}–${e} of ${tot}</span><div class="page-btns">${b}</div></div>`;
+}
+
+function renderUT(cols){
+  const con=document.getElementById('ut');
+  document.getElementById('uc').textContent=cols.length;
+  if(!cols.length){con.innerHTML=`<div class="state-box"><span class="si">✅</span><p>All columns were successfully mapped.</p></div>`;return;}
+  const tb=cols.map(c=>`<tr><td class="mono">${c.col}</td><td><strong>${esc(c.header||'—')}</strong></td><td style="color:var(--textdim)">${esc(c.reason||'—')}</td></tr>`).join('');
+  con.innerHTML=`<div class="table-wrap"><table><thead><tr><th>COL</th><th>HEADER</th><th>REASON</th></tr></thead><tbody>${tb}</tbody></table></div>`;
+}
+
+document.querySelectorAll('.filter-btn').forEach(b=>b.addEventListener('click',()=>{
+  cf=b.dataset.f;pg=1;
+  document.querySelectorAll('.filter-btn').forEach(x=>x.classList.toggle('active',x===b));
+  renderPT();
+}));
+
+document.getElementById('si').addEventListener('input',e=>{sq=e.target.value.trim();pg=1;renderPT();});
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
